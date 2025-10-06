@@ -80,7 +80,7 @@ let deal = async (ctx) => {
 					// 	weiboUtils.getShowData(retweet.user.id, retweet.bid)
 					// );
 					const retweetData = await weiboUtils.getShowData(retweet.user.id, retweet.bid);
-					if (retweetData !== undefined && retweetData.text) {
+					if (retweetData && retweetData.text) {
 						item.mblog.retweeted_status.text = retweetData.text;
 					}
 				}
