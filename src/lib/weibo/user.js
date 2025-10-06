@@ -16,20 +16,39 @@ let deal = async (ctx) => {
 		},
 	}).then((res) => res.json());
 
-	const name = containerData.data.userInfo.screen_name;
-	const description = containerData.data.userInfo.description;
-	const profileImageUrl = containerData.data.userInfo.profile_image_url;
-	const containerId = containerData.data.tabsInfo.tabs.filter((item) => item.tab_type === 'weibo')[0].containerid;
+	if (!containerData || containerData.ok !== 1 || !containerData.data) {
+		const reason = containerData?.msg || containerData?.message || '未能从微博接口获取用户数据';
+		return ctx.text(`微博接口异常：${reason}`, 502);
+	}
 
-	const cards = await fetch(`https://m.weibo.cn/api/container/getIndex?type=uid&value=${uid}&containerid=${containerId}`, {
+	const { userInfo, tabsInfo } = containerData.data;
+	if (!userInfo) {
+		return ctx.text('微博接口未返回用户信息', 404);
+	}
+
+	const weiboTab = tabsInfo?.tabs?.find((item) => item.tab_type === 'weibo');
+	if (!weiboTab?.containerid) {
+		return ctx.text('微博接口未返回用户微博列表', 502);
+	}
+
+	const name = userInfo.screen_name;
+	const description = userInfo.description;
+	const profileImageUrl = userInfo.profile_image_url;
+	const containerId = weiboTab.containerid;
+
+	const cardsResponse = await fetch(`https://m.weibo.cn/api/container/getIndex?type=uid&value=${uid}&containerid=${containerId}`, {
 		headers: {
 			Referer: `https://m.weibo.cn/u/${uid}`,
 			'MWeibo-Pwa': 1,
 			'X-Requested-With': 'XMLHttpRequest',
 		},
-	})
-		.then((res) => res.json())
-		.then((res) => res.data.cards);
+	}).then((res) => res.json());
+
+	const cards = cardsResponse?.data?.cards;
+	if (!Array.isArray(cards)) {
+		const reason = cardsResponse?.msg || cardsResponse?.message || '未返回卡片数据';
+		return ctx.text(`微博接口未返回有效的卡片数据：${reason}`, 502);
+	}
 
 	let resultItems = await Promise.all(
 		cards
