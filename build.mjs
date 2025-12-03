@@ -1,6 +1,7 @@
-import esbuild from 'esbuild';
-import fs from 'fs/promises';
+import fs from 'node:fs/promises';
 import { NodeModulesPolyfillPlugin } from '@esbuild-plugins/node-modules-polyfill';
+
+import esbuild from 'esbuild';
 
 function buildWorker({ entry, out, debug, external } = {}) {
 	return esbuild.build({
@@ -29,11 +30,11 @@ function buildWorker({ entry, out, debug, external } = {}) {
 	});
 }
 
-let result = await buildWorker({
+const result = await buildWorker({
 	entry: './src/worker.js',
 	out: './dist/worker.js',
 	debug: false,
-	external: ['cloudflare:sockets']
+	external: ['cloudflare:sockets'],
 });
 
 if (result.metafile) {
