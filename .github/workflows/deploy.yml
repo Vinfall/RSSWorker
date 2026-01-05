@@ -1,17 +1,35 @@
 name: Deploy Worker
+
+permissions:
+  contents: read
+  pull-requests: none
+
 on:
   workflow_dispatch:
   repository_dispatch:
   push:
     branches:
       - main
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     name: Deploy
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: setup project with mise
+        id: setup-mise
+        uses: jdx/mise-action@v3
+        with:
+          install: false
+          cache: true
+          tool_versions: |
+            node lts
+            pnpm latest
+          reshim: false
       - name: Build & Deploy Worker
         uses: cloudflare/wrangler-action@v3
         with:
