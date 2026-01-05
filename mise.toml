@@ -1,0 +1,7 @@
+[tools]
+# node = "lts"
+# pnpm = "latest"
+"npm:wrangler" = "latest"
+
+[settings.npm]
+package_manager = "pnpm"
